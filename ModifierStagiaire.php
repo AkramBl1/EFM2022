@@ -1,7 +1,8 @@
 <?php
-include("config/connect.php");
-$id = null;
-$stagiaire = null;
+include("connexion.php");
+$sql = $pdo->prepare("SELECT * FROM filiere");
+$sql->execute();
+$filiers = $sql->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
   $id = $_GET["id"];
@@ -9,12 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
   $sql = "SELECT * FROM stagiaire WHERE idStagiaire = ? ";
   $stmt = $pdo->prepare($sql);
   $stmt->execute([$id]);
-  $stagiaire = $stmt->fetch();
-
-  if (!$stagiaire) {
-      echo "stagiaire non trouvée.";
-      exit();
-  }
+  $stagiaire = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier'])) {
 
@@ -28,7 +24,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier'])) {
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$nom, $prenom, $dateNaissance, $filiere, $id]);
     header("Location: espaceprivee.php");  
-    exit();  
 }
 
 ?>
@@ -38,14 +33,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> 
-  <title>Ajouter</title>
+  <title>Modifier</title>
 </head>
 
 <body>
   <form action="<?= htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" enctype="multipart/form-data">
-  <i class="bi bi-arrow-left"></i><a href="Espaceprivee.php">Retour</a><br>
+    <a href="Espaceprivee.php">Retour</a><br>
     <h3>Modifier un stagiare</h3><br>
-    <input type="hidden" name="id" value="<?= $id; ?>"> 
+    <input type="hidden" name="id" value="<?= $stagiaire['idStagiaire']; ?>"> 
     <label for="">NOM:</label><br>
     <input type="text" id="nom" name="nom" value="<?= $stagiaire['nom']; ?>"><br>
     <label for="prenom">PRENOM:</label><br>
@@ -53,12 +48,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier'])) {
     <label for="date">DATE DE NAISSANCE:</label><br>
     <input type="date" id="date" name="date" value="<?= $stagiaire['dateNaissance']; ?>"><br>
     <select name="filiere" id="filiere">
-      <option value="<?= $stagiaire['idFiliere']; ?>"><?= $stagiaire['idFiliere'] ?></option>
+      <option value="<?= $stagiaire['idFiliere']; ?>"><?= $stagiaire['idFiliere'] ;?></option>
       <option disabled>choisissez une filiere</option>
-      <option value="DD">Developpement digital</option>
-      <option value="INFO">Infographie</option>
-      <option value="AI">Automatisation industrielle</option>
-      <option value="F">Finance</option>
+      <?php foreach ($filiers as $filier): ;?>
+        <option value="<?= $filier['intitule'] ?>"><?= $filier['intitule']; ?> </option>
+      <?php endforeach ; ?>
   </select>
 
     <button type="submit" name="modifier">update</button>
